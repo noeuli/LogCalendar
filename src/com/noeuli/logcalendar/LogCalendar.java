@@ -12,10 +12,24 @@ public class LogCalendar extends Application {
     
     private Toast mToast;
     
+    private CalendarList mCalendarList;
+    
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate()");
+        
+        loadCalendarList();
+    }
+    
+    public void loadCalendarList() {
+        if (LOGD) Log.d(TAG, "loadCalendarList()");
+        
+        mCalendarList = new CalendarList(this);
+    }
+    
+    public CalendarList getCalendarList() {
+        return mCalendarList;
     }
     
     public void showToast(String msg) {

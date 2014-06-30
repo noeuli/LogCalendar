@@ -22,14 +22,14 @@ public class CalendarList {
     private ContentResolver mResolver;
     private ArrayList<CalendarInfo> mCalendarList;
     private ArrayList<CalendarInfo> mDisplayCalendarList;
-    private int mSelectedCalendarId;
+    private int mSelectedCalendarIndex;
     
     public CalendarList(Context ctx) {
         mContext = ctx;
         mResolver = ctx.getContentResolver();
         mCalendarList = new ArrayList<CalendarInfo>();
         mDisplayCalendarList = new ArrayList<CalendarInfo>();
-        mSelectedCalendarId = LogCalendar.INVALID_ID;
+        mSelectedCalendarIndex = LogCalendar.INVALID_ID;
         
         initCalendarList();
         loadDisplayCalendarList();
@@ -126,7 +126,7 @@ public class CalendarList {
     */
     
     private CalendarInfo findItemAt(ArrayList<CalendarInfo> list, int position) {
-        if (list != null && list.size() > position) {
+        if (list != null && position > LogCalendar.INVALID_ID && list.size() > position) {
             return list.get(position);
         }
         return null;
@@ -141,7 +141,7 @@ public class CalendarList {
     }
     
     private CharSequence findTitle(ArrayList<CalendarInfo> list, int position) {
-        if (list != null && list.size() > position) {
+        if (list != null && position > LogCalendar.INVALID_ID && list.size() > position) {
             CalendarInfo info = list.get(position);
             if (info != null) return info.getCalendarTitle();
         }
@@ -177,7 +177,7 @@ public class CalendarList {
             for (int i=0; i<mCalendarList.size(); i++) {
                 CalendarInfo info = mCalendarList.get(i);
                 String key = String.valueOf(info.getId());
-                boolean value = pref.getBoolean(key, false);
+                boolean value = pref.getBoolean(key, true);
                 if (LOGD) Log.d(TAG, "loadDisplayCalendarList(" + i + ") key=" + key + " value=" + value);
                 info.setChecked(value);
             }
@@ -209,15 +209,25 @@ public class CalendarList {
             Log.e(TAG, "saveDisplayCalendarList(): Error, ", e);
         }
     }
-    public void setSelectedCalendarId(int id) {
-        mSelectedCalendarId = id;
+    
+    public void setSelectedCalendarIndex(int index) {
+        mSelectedCalendarIndex = index;
     }
     
-    public int getSelectedCalendarId() {
-        return mSelectedCalendarId;
+    public int getSelectedCalendarIndex() {
+        return mSelectedCalendarIndex;
+    }
+
+    public CharSequence getSelectedCalendarTitle() {
+        return getDisplayTitle(mSelectedCalendarIndex);
     }
     
-    public String getSelectedCalendarTitle() {
-        return null;
+    public int getSelectedCalendarId(int index) {
+        int id = LogCalendar.INVALID_ID;
+        CalendarInfo info = getDisplayItemAt(index);
+        if (info != null) {
+            id = info.getId();
+        }
+        return id;
     }
 }
