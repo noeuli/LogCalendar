@@ -5,7 +5,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+//import android.content.Context;
 
 public class LogCalendarActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -31,7 +32,7 @@ public class LogCalendarActivity extends Activity
      */
     private CharSequence mTitle;
     
-    private Context mContext;
+//    private Context mContext;
     private LogCalendar mApp;
     private CalendarList mCalendarList;
 
@@ -41,11 +42,11 @@ public class LogCalendarActivity extends Activity
         
         Log.i(TAG, "onCreate()");
         
-        setContentView(R.layout.log_calendar_main);
-        
         mApp = (LogCalendar) getApplication();
-        mContext = getApplicationContext();
-        if (LOGD) Log.d(TAG, "onCreate(): app=" + mApp + " context=" + mContext);
+//        mContext = getApplicationContext();
+        mCalendarList = mApp.getCalendarList();
+
+        setContentView(R.layout.log_calendar_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -53,7 +54,6 @@ public class LogCalendarActivity extends Activity
         if (mApp.getCalendarList()==null) {
             mApp.loadCalendarList();
         }
-        mCalendarList = mApp.getCalendarList();
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
@@ -70,6 +70,7 @@ public class LogCalendarActivity extends Activity
         if (mCalendarList != null) {
             mCalendarList.setSelectedCalendarIndex(position);
             title = (String) mCalendarList.getSelectedCalendarTitle();
+            if (LOGD) Log.d(TAG, "onNavigationDrawerItemSelected(" + position + ") title=" + title);
         }
         if (title != null) updateDrawerTitle(position, title);
     }
@@ -114,7 +115,9 @@ public class LogCalendarActivity extends Activity
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.log_calendar, menu);
             restoreActionBar();
-            updateDrawerTitle(-1, (String)mTitle);
+            int id = LogCalendar.INVALID_ID;
+            if (mCalendarList != null) id = mCalendarList.getSelectedCalendarIndex();
+            updateDrawerTitle(id, (String)mTitle);
             return true;
         }
         return super.onCreateOptionsMenu(menu);
@@ -129,6 +132,8 @@ public class LogCalendarActivity extends Activity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            Intent settings = new Intent(this, LogCalendarSettings.class);
+            startActivity(settings);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -138,6 +143,9 @@ public class LogCalendarActivity extends Activity
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "onResume()");
+        if (mNavigationDrawerFragment != null) {
+            mNavigationDrawerFragment.refreshDrawerList();
+        }
     }
 
     @Override

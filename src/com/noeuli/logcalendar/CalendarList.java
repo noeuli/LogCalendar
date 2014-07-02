@@ -12,7 +12,7 @@ import android.provider.CalendarContract.CalendarEntity;
 import android.util.Log;
 
 public class CalendarList {
-    private static final String TAG = "CalendarList";
+    private static final String TAG = "LogCalendar.CalendarList";
     private static final boolean LOGD = LogCalendar.LOGD;
     
     private static final String CALENDAR_URI = "content://com.android.calendar";
@@ -74,8 +74,17 @@ public class CalendarList {
             }
 
             do {
-                CalendarInfo r = new CalendarInfo(c.getInt(0), c.getString(1), c.getString(2),
-                        c.getString(3), c.getString(4), c.getInt(5));
+                int id = c.getInt(0);
+                String accName = c.getString(1);
+                String accType = c.getString(2);
+                String syncId = c.getString(3);
+                String title = c.getString(4);
+                int accLevel = c.getInt(5);
+                if (accName != null && accName.equals(title)) {
+                    title = mContext.getResources().getString(R.string.default_calendar);
+                    Log.d(TAG, "initCalendarList(): title changed from " + accName + " to " + title);
+                }
+                CalendarInfo r = new CalendarInfo(id, accName, accType, syncId, title, accLevel, true);
                 mCalendarList.add(r);
                 
                 if (LOGD) Log.d(TAG, "initCalendarId() [" + (i++) + "] record: " + r);
@@ -87,6 +96,28 @@ public class CalendarList {
             c.close();
         }
     }
+
+    /*
+    private void initDisplayCalendarList() {
+        if (LOGD) Log.d(TAG, "initDisplayCalendarList()");
+
+        if (mCalendarList == null) {
+            Log.e(TAG, "initDisplayCalendarList(): Error! Invalid case!");
+            return;
+        }
+
+        if (mDisplayCalendarList == null) {
+            mDisplayCalendarList = new ArrayList<CalendarInfo>();
+        }
+        mDisplayCalendarList.clear();
+
+        for (CalendarInfo info : mCalendarList) {
+            if (info.isChecked()) {
+                mDisplayCalendarList.add(info);
+            }
+        }
+    }
+    */
     
     public int size() {
         int size = 0;
@@ -178,8 +209,11 @@ public class CalendarList {
                 CalendarInfo info = mCalendarList.get(i);
                 String key = String.valueOf(info.getId());
                 boolean value = pref.getBoolean(key, true);
-                if (LOGD) Log.d(TAG, "loadDisplayCalendarList(" + i + ") key=" + key + " value=" + value);
+                if (LOGD) Log.d(TAG, "loadDisplayCalendarList(" + i + ") key=" + key + " value=" + value + " info=" + info);
                 info.setChecked(value);
+                if (value) {
+                    mDisplayCalendarList.add(info);
+                }
             }
 
         } catch (Exception e) {
@@ -219,7 +253,18 @@ public class CalendarList {
     }
 
     public CharSequence getSelectedCalendarTitle() {
-        return getDisplayTitle(mSelectedCalendarIndex);
+        CharSequence title = getDisplayTitle(mSelectedCalendarIndex);
+        if (LOGD) Log.d(TAG, "getSelectedCalendarTitle(" + mSelectedCalendarIndex + ") returns " + title);
+        return title;
+    }
+
+    public int getCalendarId(int index) {
+        int id = LogCalendar.INVALID_ID;
+        CalendarInfo info = getItemAt(index);
+        if (info != null) {
+            id = info.getId();
+        }
+        return id;
     }
     
     public int getSelectedCalendarId(int index) {

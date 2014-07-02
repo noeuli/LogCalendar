@@ -1,15 +1,19 @@
 package com.noeuli.logcalendar;
 
-import android.app.Activity;
+import java.util.ArrayList;
+
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Fragment;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
+//import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,6 +31,8 @@ import android.widget.Toast;
  * design guidelines</a> for a complete explanation of the behaviors implemented here.
  */
 public class NavigationDrawerFragment extends Fragment {
+    private static final String TAG = "LogCalendar.NavigationDrawerFragment";
+    private static final boolean LOGD = LogCalendar.LOGD;
 
     /**
      * Remember the position of the selected item.
@@ -57,12 +63,23 @@ public class NavigationDrawerFragment extends Fragment {
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
+    private LogCalendar mApp;
+//    private Context mContext;
+    private CalendarList mCalendarList;
+
     public NavigationDrawerFragment() {
+        Log.i(TAG, "NavigationDrawerFragment class constructor!");
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.i(TAG, "onCreate()");
+
+        mApp = (LogCalendar) getActivity().getApplication();
+//        mContext = getActivity().getApplicationContext();
+        mCalendarList = mApp.getCalendarList();
 
         // Read in the flag indicating whether or not the user has demonstrated awareness of the
         // drawer. See PREF_USER_LEARNED_DRAWER for details.
@@ -81,13 +98,34 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public void onActivityCreated (Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (LOGD) Log.d(TAG, "onActivityCreated()");
+        
         // Indicate that this fragment would like to influence the set of actions in the action bar.
         setHasOptionsMenu(true);
+    }
+
+    private ArrayAdapter<String> mDrawerListAdapter;
+    public void refreshDrawerList() {
+        if (mCalendarList==null || mDrawerListAdapter==null) {
+            Log.e(TAG, "refreshDrawerList() something null");
+            return;
+        }
+        
+        ArrayList<String> calendarLabels = mCalendarList.getDisplayCalendarTitleArray();
+        mDrawerListAdapter.clear();
+        mDrawerListAdapter.addAll(calendarLabels);
+        if (LOGD) Log.d(TAG, "refreshDrawerList() size=" + calendarLabels.size());
+        mDrawerListAdapter.notifyDataSetChanged();
+        mDrawerListView.invalidate();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
+
+        Log.i(TAG, "onCreateView()");
+        
         mDrawerListView = (ListView) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -96,15 +134,14 @@ public class NavigationDrawerFragment extends Fragment {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
+
+        ArrayList<String> calendarLabels = mCalendarList.getDisplayCalendarTitleArray();
+        mDrawerListAdapter = new ArrayAdapter<String>(
                 getActionBar().getThemedContext(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
-                new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                }));
+                calendarLabels);
+        mDrawerListView.setAdapter(mDrawerListAdapter);
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -120,6 +157,8 @@ public class NavigationDrawerFragment extends Fragment {
      * @param drawerLayout The DrawerLayout containing this fragment's UI.
      */
     public void setUp(int fragmentId, DrawerLayout drawerLayout) {
+        if (LOGD) Log.d(TAG, "setUp(" + fragmentId + ")");
+        
         mFragmentContainerView = getActivity().findViewById(fragmentId);
         mDrawerLayout = drawerLayout;
 
@@ -142,6 +181,7 @@ public class NavigationDrawerFragment extends Fragment {
         ) {
             @Override
             public void onDrawerClosed(View drawerView) {
+                if (LOGD) Log.d(TAG, "mDrawerToggle.onDrawerClosed()");
                 super.onDrawerClosed(drawerView);
                 if (!isAdded()) {
                     return;
@@ -152,6 +192,7 @@ public class NavigationDrawerFragment extends Fragment {
 
             @Override
             public void onDrawerOpened(View drawerView) {
+                if (LOGD) Log.d(TAG, "mDrawerToggle.onDrawerOpened()");
                 super.onDrawerOpened(drawerView);
                 if (!isAdded()) {
                     return;
@@ -202,6 +243,7 @@ public class NavigationDrawerFragment extends Fragment {
 
     @Override
     public void onAttach(Activity activity) {
+        if (LOGD) Log.d(TAG, "onAttach()");
         super.onAttach(activity);
         try {
             mCallbacks = (NavigationDrawerCallbacks) activity;
@@ -212,18 +254,21 @@ public class NavigationDrawerFragment extends Fragment {
 
     @Override
     public void onDetach() {
+        if (LOGD) Log.d(TAG, "onDetach()");
         super.onDetach();
         mCallbacks = null;
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        if (LOGD) Log.d(TAG, "onSaveInstanceState()");
         super.onSaveInstanceState(outState);
         outState.putInt(STATE_SELECTED_POSITION, mCurrentSelectedPosition);
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        if (LOGD) Log.d(TAG, "onConfigurationChanged()");
         super.onConfigurationChanged(newConfig);
         // Forward the new configuration the drawer toggle component.
         mDrawerToggle.onConfigurationChanged(newConfig);
@@ -231,6 +276,7 @@ public class NavigationDrawerFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if (LOGD) Log.d(TAG, "onCreateOptionsMenu()");
         // If the drawer is open, show the global app actions in the action bar. See also
         // showGlobalContextActionBar, which controls the top-left area of the action bar.
         if (mDrawerLayout != null && isDrawerOpen()) {
@@ -242,6 +288,7 @@ public class NavigationDrawerFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (LOGD) Log.d(TAG, "onOptionsItemSelected()");
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
@@ -259,6 +306,7 @@ public class NavigationDrawerFragment extends Fragment {
      * 'context', rather than just what's in the current screen.
      */
     private void showGlobalContextActionBar() {
+        if (LOGD) Log.d(TAG, "showGlobalContextActionBar()");
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
