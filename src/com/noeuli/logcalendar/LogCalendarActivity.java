@@ -146,6 +146,8 @@ public class LogCalendarActivity extends Activity
         if (mNavigationDrawerFragment != null) {
             mNavigationDrawerFragment.refreshDrawerList();
         }
+        // reset
+        onNavigationDrawerItemSelected(0);
     }
 
     @Override

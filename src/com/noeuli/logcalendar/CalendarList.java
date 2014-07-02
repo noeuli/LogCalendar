@@ -97,12 +97,11 @@ public class CalendarList {
         }
     }
 
-    /*
-    private void initDisplayCalendarList() {
-        if (LOGD) Log.d(TAG, "initDisplayCalendarList()");
+    private void refreshDisplayCalendarList() {
+        if (LOGD) Log.d(TAG, "refreshDisplayCalendarList()");
 
         if (mCalendarList == null) {
-            Log.e(TAG, "initDisplayCalendarList(): Error! Invalid case!");
+            Log.e(TAG, "refreshDisplayCalendarList(): Error! Invalid case!");
             return;
         }
 
@@ -117,7 +116,6 @@ public class CalendarList {
             }
         }
     }
-    */
     
     public int size() {
         int size = 0;
@@ -239,6 +237,8 @@ public class CalendarList {
             }
 
             ed.commit();
+
+            refreshDisplayCalendarList();
         } catch (Exception e) {
             Log.e(TAG, "saveDisplayCalendarList(): Error, ", e);
         }

@@ -116,6 +116,10 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerListAdapter.clear();
         mDrawerListAdapter.addAll(calendarLabels);
         if (LOGD) Log.d(TAG, "refreshDrawerList() size=" + calendarLabels.size());
+        for (int i=0; i<calendarLabels.size(); i++) {
+            String str = calendarLabels.get(i);
+            Log.d(TAG, "refreshDrawerList() " + i + " " + str);
+        }
         mDrawerListAdapter.notifyDataSetChanged();
         mDrawerListView.invalidate();
     }

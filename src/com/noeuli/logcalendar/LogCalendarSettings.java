@@ -166,6 +166,8 @@ public class LogCalendarSettings extends Activity implements OnClickListener {
                 if (item != null) {
                     item.setChecked(checked);
                 }
+
+                if (LOGD) Log.d(TAG, "onClick() " + checked + " item=" + item);
             }
         };
 
